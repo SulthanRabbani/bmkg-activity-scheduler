@@ -284,7 +284,11 @@ class BMKGWeatherService
                     $humidity = $this->simulateHumidity($hour);
 
                     // Check if weather is suitable for outdoor activity
-                    if ($this->isWeatherSuitable(['condition' => $weatherCondition, 'temperature' => $temperature])) {
+                    if ($this->isWeatherSuitable([
+                        'condition' => $weatherCondition, 
+                        'temperature' => $temperature, 
+                        'humidity' => $humidity
+                    ])) {
                         $timeSlots[] = [
                             'time' => $timeSlot,
                             'period' => $period,
