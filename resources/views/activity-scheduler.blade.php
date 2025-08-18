@@ -5,202 +5,157 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BMKG Activity Scheduler</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Vite CSS -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
+
     <style>
-        .weather-card {
-            transition: transform 0.2s ease-in-out;
-            border-left: 4px solid #28a745;
-        }
-        
-        .weather-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        .time-slot {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-radius: 8px;
-            padding: 10px;
-            margin: 5px 0;
-            border-left: 3px solid #007bff;
-        }
-        
-        .weather-icon {
-            font-size: 1.2em;
-            margin-right: 8px;
-        }
-        
         .loading-spinner {
             display: none;
         }
-        
-        .header-bg {
-            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-            color: white;
-            padding: 2rem 0;
-        }
-        
-        .form-section {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 2rem;
-            margin-top: -2rem;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .results-section {
-            margin-top: 2rem;
-        }
-        
-        .alert-custom {
-            border-radius: 8px;
-            border: none;
-        }
     </style>
 </head>
-<body class="bg-light">
+<body class="bg-gray-50 min-h-screen">
     <!-- Header -->
-    <div class="header-bg">
-        <div class="container">
-            <div class="row">
-                <div class="col-12 text-center">
-                    <h1 class="mb-2">
-                        <i class="fas fa-calendar-alt me-2"></i>
-                        BMKG Activity Scheduler
-                    </h1>
-                    <p class="lead mb-0">Jadwalkan aktivitas outdoor Anda dengan prediksi cuaca terpercaya</p>
-                </div>
+    <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-8 sm:py-12 lg:py-16">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h1 class="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-2 sm:mb-4">
+                    <i class="fas fa-calendar-alt mr-2 sm:mr-3"></i>
+                    BMKG Activity Scheduler
+                </h1>
+                <p class="text-sm sm:text-lg lg:text-xl text-blue-100 px-4">Jadwalkan aktivitas outdoor Anda dengan prediksi cuaca terpercaya</p>
             </div>
         </div>
     </div>
 
-    <div class="container">
+    <div class="container mx-auto px-2 sm:px-4 lg:px-8 -mt-4 sm:-mt-6 lg:-mt-8 relative z-10">
         <!-- Activity Form -->
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="form-section">
-                    <h3 class="text-center mb-4">
-                        <i class="fas fa-tasks text-primary me-2"></i>
-                        Rencanakan Aktivitas Anda
-                    </h3>
-                    
-                    <form id="activityForm">
-                        <div class="mb-3">
-                            <label for="activityName" class="form-label">
-                                <i class="fas fa-clipboard-list me-1"></i>
-                                Nama Aktivitas
-                            </label>
-                            <input type="text" class="form-control" id="activityName" name="activity_name" 
-                                   placeholder="Contoh: Kunjungan lapangan, Pemeliharaan alat, Survey lokasi" required>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="location" class="form-label">
-                                <i class="fas fa-map-marker-alt me-1"></i>
-                                Lokasi (Kecamatan/Desa)
-                            </label>
-                            <input type="text" class="form-control" id="location" name="location" 
-                                   placeholder="Contoh: Jakarta Pusat, Bogor, Bandung" required>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="preferredDate" class="form-label">
-                                <i class="fas fa-calendar me-1"></i>
-                                Tanggal Preferensi
-                            </label>
-                            <input type="date" class="form-control" id="preferredDate" name="preferred_date" 
-                                   min="{{ date('Y-m-d') }}" required>
-                        </div>
-                        
-                        <div class="text-center">
-                            <button type="submit" class="btn btn-primary btn-lg px-4">
-                                <i class="fas fa-search me-2"></i>
-                                Cari Waktu Optimal
-                            </button>
-                        </div>
-                    </form>
-                </div>
+        <div class="w-full max-w-sm mx-auto sm:max-w-lg lg:max-w-2xl xl:max-w-4xl">
+            <div class="bg-white rounded-lg sm:rounded-xl shadow-lg sm:shadow-xl p-3 sm:p-6 lg:p-8 mx-2 sm:mx-0">
+                <h3 class="text-base sm:text-xl lg:text-2xl font-bold text-center mb-3 sm:mb-6 lg:mb-8 text-gray-800">
+                    <i class="fas fa-tasks text-blue-600 mr-1 sm:mr-3 text-sm sm:text-base"></i>
+                    <span class="block sm:inline">Rencanakan Aktivitas Anda</span>
+                </h3>
+
+                <form id="activityForm" class="space-y-3 sm:space-y-6">
+                    <div>
+                        <label for="activityName" class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">
+                            <i class="fas fa-clipboard-list mr-1 sm:mr-2 text-xs sm:text-sm"></i>
+                            <span class="text-xs sm:text-sm">Nama Aktivitas</span>
+                        </label>
+                        <input type="text"
+                               class="w-full px-2 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-md sm:rounded-lg focus:ring-1 sm:focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 placeholder-gray-400 text-xs sm:text-base"
+                               id="activityName"
+                               name="activity_name"
+                               placeholder="Contoh: Kunjungan lapangan, Survey lokasi"
+                               required>
+                    </div>
+
+                    <div>
+                        <label for="location" class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">
+                            <i class="fas fa-map-marker-alt mr-1 sm:mr-2 text-xs sm:text-sm"></i>
+                            <span class="text-xs sm:text-sm">Lokasi (Kecamatan/Desa)</span>
+                        </label>
+                        <input type="text"
+                               class="w-full px-2 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-md sm:rounded-lg focus:ring-1 sm:focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 placeholder-gray-400 text-xs sm:text-base"
+                               id="location"
+                               name="location"
+                               placeholder="Contoh: Jakarta Pusat, Bogor"
+                               required>
+                    </div>
+
+                    <div>
+                        <label for="preferredDate" class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1 sm:mb-2">
+                            <i class="fas fa-calendar mr-1 sm:mr-2 text-xs sm:text-sm"></i>
+                            <span class="text-xs sm:text-sm">Tanggal Preferensi</span>
+                        </label>
+                        <input type="date"
+                               class="w-full px-2 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-md sm:rounded-lg focus:ring-1 sm:focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 text-xs sm:text-base"
+                               id="preferredDate"
+                               name="preferred_date"
+                               min="{{ date('Y-m-d') }}"
+                               required>
+                    </div>
+
+                    <div class="text-center pt-2 sm:pt-4">
+                        <button type="submit"
+                                class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 sm:px-8 sm:py-3 rounded-md sm:rounded-lg transition duration-200 transform hover:scale-105 shadow-md sm:shadow-lg text-xs sm:text-base">
+                            <i class="fas fa-search mr-1 sm:mr-2 text-xs sm:text-sm"></i>
+                            Cari Waktu Optimal
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 
         <!-- Loading Spinner -->
-        <div class="row justify-content-center loading-spinner" id="loadingSpinner">
-            <div class="col-12 text-center">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-2">Menganalisis data cuaca BMKG...</p>
-            </div>
+        <div class="text-center py-6 sm:py-12 loading-spinner" id="loadingSpinner">
+            <div class="inline-block animate-spin rounded-full h-6 w-6 sm:h-12 sm:w-12 border-b-2 border-blue-600"></div>
+            <p class="mt-2 sm:mt-4 text-xs sm:text-base text-gray-600 font-medium">Menganalisis data cuaca BMKG...</p>
         </div>
 
         <!-- Results Section -->
-        <div class="results-section" id="resultsSection" style="display: none;">
-            <div class="row">
-                <div class="col-12">
-                    <h4 class="text-center mb-4">
-                        <i class="fas fa-cloud-sun text-warning me-2"></i>
-                        Rekomendasi Waktu Aktivitas
-                    </h4>
-                    <div id="weatherSuggestions"></div>
-                </div>
-            </div>
+        <div class="mt-6 sm:mt-12 px-2 sm:px-0" id="resultsSection" style="display: none;">
+            <h4 class="text-sm sm:text-xl lg:text-2xl font-bold text-center mb-3 sm:mb-6 lg:mb-8 text-gray-800">
+                <i class="fas fa-cloud-sun text-yellow-500 mr-1 sm:mr-3 text-sm sm:text-base"></i>
+                <span class="block sm:inline text-xs sm:text-base">Rekomendasi Waktu Aktivitas</span>
+            </h4>
+            <div id="weatherSuggestions" class="space-y-3 sm:space-y-6"></div>
         </div>
 
         <!-- Error Message -->
-        <div class="row justify-content-center" id="errorSection" style="display: none;">
-            <div class="col-lg-8">
-                <div class="alert alert-danger alert-custom" role="alert">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <strong>Terjadi Kesalahan:</strong>
-                    <span id="errorMessage"></span>
+        <div class="w-full max-w-sm mx-auto sm:max-w-lg lg:max-w-2xl mt-4 sm:mt-8 px-2 sm:px-0" id="errorSection" style="display: none;">
+            <div class="bg-red-50 border border-red-200 rounded-md sm:rounded-lg p-2 sm:p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-red-500 text-xs sm:text-base"></i>
+                    </div>
+                    <div class="ml-2 sm:ml-3">
+                        <p class="text-red-800 text-xs sm:text-base">
+                            <strong>Terjadi Kesalahan:</strong>
+                            <span id="errorMessage"></span>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Footer -->
-    <footer class="bg-dark text-white mt-5 py-4">
-        <div class="container">
-            <div class="row">
-                <div class="col-12 text-center">
-                    <p class="mb-0">
-                        <i class="fas fa-cloud me-2"></i>
-                        Data cuaca dari BMKG (Badan Meteorologi, Klimatologi, dan Geofisika)
-                    </p>
-                </div>
+    <footer class="bg-gray-900 text-white mt-12 sm:mt-16 lg:mt-20 py-6 sm:py-8">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <p class="text-gray-300 text-xs sm:text-sm lg:text-base">
+                    <i class="fas fa-cloud mr-1 sm:mr-2"></i>
+                    Data cuaca dari BMKG (Badan Meteorologi, Klimatologi, dan Geofisika)
+                </p>
             </div>
         </div>
     </footer>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
     <script>
         // Set minimum date to today
         document.getElementById('preferredDate').value = new Date().toISOString().split('T')[0];
-        
+
         // Form submission handler
         document.getElementById('activityForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
+
             const formData = new FormData(this);
             const data = Object.fromEntries(formData);
-            
+
             // Show loading spinner
             document.getElementById('loadingSpinner').style.display = 'block';
             document.getElementById('resultsSection').style.display = 'none';
             document.getElementById('errorSection').style.display = 'none';
-            
+
             // Scroll to loading section
             document.getElementById('loadingSpinner').scrollIntoView({ behavior: 'smooth' });
-            
+
             // Send request to backend
             fetch('/weather-suggestions', {
                 method: 'POST',
@@ -213,7 +168,7 @@
             .then(response => response.json())
             .then(data => {
                 document.getElementById('loadingSpinner').style.display = 'none';
-                
+
                 if (data.success) {
                     displayWeatherSuggestions(data);
                 } else {
@@ -226,74 +181,80 @@
                 console.error('Error:', error);
             });
         });
-        
+
         function displayWeatherSuggestions(data) {
             const container = document.getElementById('weatherSuggestions');
             let html = '';
-            
+
             if (data.suggestions && data.suggestions.length > 0) {
                 html += `
-                    <div class="alert alert-info alert-custom mb-4">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <strong>Aktivitas:</strong> ${data.activity_name} di <strong>${data.location}</strong>
+                    <div class="bg-blue-50 border border-blue-200 rounded-md sm:rounded-lg p-2 sm:p-4 mb-3 sm:mb-6 mx-2 sm:mx-0">
+                        <div class="flex items-center">
+                            <i class="fas fa-info-circle text-blue-500 mr-1 sm:mr-2 text-xs sm:text-base"></i>
+                            <p class="text-blue-800 font-medium text-xs sm:text-sm lg:text-base">
+                                <strong>Aktivitas:</strong> ${data.activity_name} di <strong>${data.location}</strong>
+                            </p>
+                        </div>
                     </div>
                 `;
-                
+
                 data.suggestions.forEach(day => {
                     html += `
-                        <div class="weather-card card mb-3">
-                            <div class="card-header bg-primary text-white">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-calendar-day me-2"></i>
-                                    ${day.day_name}, ${formatDate(day.date)}
+                        <div class="card mb-3 sm:mb-6 mx-2 sm:mx-0">
+                            <div class="bg-blue-600 text-white p-2 sm:p-4">
+                                <h5 class="text-xs sm:text-lg font-semibold">
+                                    <i class="fas fa-calendar-day mr-1 sm:mr-2 text-xs sm:text-base"></i>
+                                    <span class="text-xs sm:text-base">${day.day_name}, ${formatDate(day.date)}</span>
                                 </h5>
                             </div>
-                            <div class="card-body">
+                            <div class="p-2 sm:p-4 lg:p-6">
                     `;
-                    
+
                     if (day.time_slots && day.time_slots.length > 0) {
                         day.time_slots.forEach(slot => {
                             const weatherIcon = getWeatherIcon(slot.weather_condition);
                             html += `
-                                <div class="time-slot">
-                                    <div class="row align-items-center">
-                                        <div class="col-md-3">
-                                            <strong class="text-primary">
-                                                <i class="fas fa-clock me-1"></i>
-                                                ${slot.time} (${slot.period})
-                                            </strong>
+                                <div class="time-slot mb-2 sm:mb-4 p-2 sm:p-3">
+                                    <div class="space-y-1 sm:space-y-2 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-4 lg:items-center">
+                                        <div class="lg:col-span-1">
+                                            <p class="font-semibold text-blue-700 text-xs sm:text-sm lg:text-base">
+                                                <i class="fas fa-clock mr-1 text-xs sm:text-sm"></i>
+                                                <span class="text-xs sm:text-sm">${slot.time} (${slot.period})</span>
+                                            </p>
                                         </div>
-                                        <div class="col-md-3">
-                                            <span class="weather-icon">${weatherIcon}</span>
-                                            ${capitalizeFirst(slot.weather_condition)}
+                                        <div class="lg:col-span-1">
+                                            <span class="weather-icon text-sm sm:text-base lg:text-xl">${weatherIcon}</span>
+                                            <span class="text-gray-700 text-xs sm:text-sm lg:text-base">${capitalizeFirst(slot.weather_condition)}</span>
                                         </div>
-                                        <div class="col-md-3">
-                                            <i class="fas fa-thermometer-half text-danger me-1"></i>
-                                            ${slot.temperature}°C
-                                            <span class="ms-2">
-                                                <i class="fas fa-tint text-info me-1"></i>
-                                                ${slot.humidity}%
+                                        <div class="flex flex-wrap gap-1 sm:gap-2 lg:gap-4 lg:col-span-1">
+                                            <span class="flex items-center">
+                                                <i class="fas fa-thermometer-half text-red-500 mr-1 text-xs"></i>
+                                                <span class="text-gray-700 text-xs sm:text-sm lg:text-base">${slot.temperature}°C</span>
+                                            </span>
+                                            <span class="flex items-center">
+                                                <i class="fas fa-tint text-blue-500 mr-1 text-xs"></i>
+                                                <span class="text-gray-700 text-xs sm:text-sm lg:text-base">${slot.humidity}%</span>
                                             </span>
                                         </div>
-                                        <div class="col-md-12 mt-2">
-                                            <small class="text-muted">
-                                                <i class="fas fa-lightbulb me-1"></i>
-                                                ${slot.recommendation}
-                                            </small>
-                                        </div>
+                                    </div>
+                                    <div class="mt-1 sm:mt-2 lg:mt-3 pt-1 sm:pt-2 lg:pt-3 border-t border-gray-200">
+                                        <p class="text-xs sm:text-sm text-gray-600">
+                                            <i class="fas fa-lightbulb text-yellow-500 mr-1 text-xs"></i>
+                                            <span class="text-xs sm:text-sm">${slot.recommendation}</span>
+                                        </p>
                                     </div>
                                 </div>
                             `;
                         });
                     } else {
                         html += `
-                            <div class="text-center text-muted py-3">
-                                <i class="fas fa-cloud-rain fa-2x mb-2"></i>
-                                <p>Tidak ada waktu yang optimal untuk hari ini</p>
+                            <div class="text-center text-gray-500 py-8">
+                                <i class="fas fa-cloud-rain text-4xl mb-4 text-gray-400"></i>
+                                <p class="text-lg">Tidak ada waktu yang optimal untuk hari ini</p>
                             </div>
                         `;
                     }
-                    
+
                     html += `
                             </div>
                         </div>
@@ -301,30 +262,30 @@
                 });
             } else {
                 html = `
-                    <div class="alert alert-warning alert-custom text-center">
-                        <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
-                        <h5>Tidak Ada Waktu Optimal</h5>
-                        <p class="mb-0">Maaf, tidak ditemukan waktu yang optimal untuk aktivitas outdoor dalam 3 hari ke depan. Silakan coba tanggal lain.</p>
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center">
+                        <i class="fas fa-exclamation-triangle text-yellow-500 text-4xl mb-4"></i>
+                        <h5 class="text-xl font-semibold text-yellow-800 mb-2">Tidak Ada Waktu Optimal</h5>
+                        <p class="text-yellow-700">Maaf, tidak ditemukan waktu yang optimal untuk aktivitas outdoor dalam 3 hari ke depan. Silakan coba tanggal lain.</p>
                     </div>
                 `;
             }
-            
+
             container.innerHTML = html;
             document.getElementById('resultsSection').style.display = 'block';
             document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
         }
-        
+
         function showError(message) {
             document.getElementById('errorMessage').textContent = message;
             document.getElementById('errorSection').style.display = 'block';
             document.getElementById('errorSection').scrollIntoView({ behavior: 'smooth' });
         }
-        
+
         function formatDate(dateString) {
             const options = { year: 'numeric', month: 'long', day: 'numeric' };
             return new Date(dateString).toLocaleDateString('id-ID', options);
         }
-        
+
         function getWeatherIcon(condition) {
             const icons = {
                 'cerah': '☀️',
@@ -336,7 +297,7 @@
             };
             return icons[condition.toLowerCase()] || '🌤️';
         }
-        
+
         function capitalizeFirst(str) {
             return str.charAt(0).toUpperCase() + str.slice(1);
         }

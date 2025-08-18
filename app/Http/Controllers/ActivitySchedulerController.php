@@ -38,7 +38,7 @@ class ActivitySchedulerController extends Controller
         try {
             // Get weather forecast from BMKG API
             $weatherData = $this->weatherService->getWeatherForecast($request->location);
-            
+
             if (!$weatherData) {
                 return response()->json([
                     'success' => false,
@@ -72,12 +72,12 @@ class ActivitySchedulerController extends Controller
     {
         $suggestions = [];
         $startDate = Carbon::parse($preferredDate);
-        
+
         // Check 3 days starting from preferred date
         for ($i = 0; $i < 3; $i++) {
             $date = $startDate->copy()->addDays($i);
             $dayForecast = $weatherData[$i] ?? null;
-            
+
             if ($dayForecast) {
                 $timeSlots = $this->generateTimeSlots($date, $dayForecast);
                 if (!empty($timeSlots)) {

@@ -9,7 +9,7 @@ use Carbon\Carbon;
 class BMKGWeatherService
 {
     private $baseUrl = 'https://data.bmkg.go.id';
-    
+
     /**
      * Get weather forecast data from BMKG API
      */
@@ -18,21 +18,21 @@ class BMKGWeatherService
         try {
             // Try different BMKG API endpoints
             $forecast = $this->tryMultipleEndpoints($location);
-            
+
             if ($forecast) {
                 return $this->parseWeatherData($forecast);
             }
-            
+
             // If API fails, return mock data for demo
             Log::warning("BMKG API unavailable, using mock data for location: {$location}");
             return $this->generateMockWeatherData();
-            
+
         } catch (\Exception $e) {
             Log::error("Error fetching weather data: " . $e->getMessage());
             return $this->generateMockWeatherData();
         }
     }
-    
+
     /**
      * Try multiple BMKG API endpoints
      */
@@ -43,11 +43,11 @@ class BMKGWeatherService
             $this->baseUrl . '/DataMKG/MEWS/DigitalForecast/',
             $this->baseUrl . '/prakiraan-cuaca/',
         ];
-        
+
         foreach ($endpoints as $endpoint) {
             try {
                 $response = Http::timeout(10)->get($endpoint);
-                
+
                 if ($response->successful()) {
                     $body = $response->body();
                     if (!empty($body) && strlen($body) > 100) {
@@ -59,10 +59,10 @@ class BMKGWeatherService
                 continue;
             }
         }
-        
+
         return null;
     }
-    
+
     /**
      * Parse weather data from BMKG API response
      */
@@ -72,25 +72,25 @@ class BMKGWeatherService
             // This is a simplified parser - actual BMKG XML structure may vary
             libxml_use_internal_errors(true);
             $xml = simplexml_load_string($xmlData);
-            
+
             if ($xml === false) {
                 return $this->generateMockWeatherData();
             }
-            
+
             // Parse the XML structure based on actual BMKG format
             $forecast = [];
-            
+
             // Note: This is a simplified implementation
             // You would need to adjust based on actual BMKG XML structure
-            
+
             return $this->generateMockWeatherData(); // Fallback to mock data
-            
+
         } catch (\Exception $e) {
             Log::error("Error parsing weather data: " . $e->getMessage());
             return $this->generateMockWeatherData();
         }
     }
-    
+
     /**
      * Generate realistic mock weather data for demo purposes
      */
@@ -104,18 +104,18 @@ class BMKGWeatherService
             'hujan ringan' => ['probability' => 0.1, 'suitable' => false],
             'hujan' => ['probability' => 0.05, 'suitable' => false],
         ];
-        
+
         $forecast = [];
-        
+
         for ($day = 0; $day < 3; $day++) {
             $dailyForecast = [];
-            
+
             $periods = ['morning', 'afternoon', 'evening'];
-            
+
             foreach ($periods as $period) {
                 $condition = $this->getRandomWeatherCondition($weatherConditions);
                 $baseTemp = $this->getBaseTemperature($period);
-                
+
                 $dailyForecast[$period] = [
                     'condition' => $condition,
                     'temperature' => $baseTemp + rand(-3, 3),
@@ -124,13 +124,13 @@ class BMKGWeatherService
                     'suitable' => $weatherConditions[$condition]['suitable']
                 ];
             }
-            
+
             $forecast[] = $dailyForecast;
         }
-        
+
         return $forecast;
     }
-    
+
     /**
      * Get random weather condition based on probability
      */
@@ -138,17 +138,17 @@ class BMKGWeatherService
     {
         $rand = mt_rand() / mt_getrandmax();
         $cumulative = 0;
-        
+
         foreach ($conditions as $condition => $data) {
             $cumulative += $data['probability'];
             if ($rand <= $cumulative) {
                 return $condition;
             }
         }
-        
+
         return 'cerah'; // Fallback
     }
-    
+
     /**
      * Get base temperature for different periods
      */
@@ -165,7 +165,7 @@ class BMKGWeatherService
                 return 25;
         }
     }
-    
+
     /**
      * Check if weather conditions are suitable for outdoor activities
      */
@@ -174,16 +174,16 @@ class BMKGWeatherService
         $condition = strtolower($weatherData['condition']);
         $temperature = $weatherData['temperature'];
         $humidity = $weatherData['humidity'];
-        
+
         // Define suitable conditions
         $suitableConditions = ['cerah', 'berawan', 'berawan sebagian', 'kabut'];
-        
+
         return in_array($condition, $suitableConditions)
             && $temperature >= 20
             && $temperature <= 35
             && $humidity <= 85;
     }
-    
+
     /**
      * Get weather recommendation text
      */
@@ -192,38 +192,38 @@ class BMKGWeatherService
         $temp = $weatherData['temperature'];
         $condition = strtolower($weatherData['condition']);
         $humidity = $weatherData['humidity'];
-        
+
         if (strpos($condition, 'hujan') !== false) {
             return "Cuaca hujan, tidak disarankan untuk aktivitas outdoor";
         }
-        
+
         if ($temp >= 32) {
             return "Cuaca sangat panas, pastikan membawa topi, sunscreen, dan air minum yang cukup";
         }
-        
+
         if ($temp >= 28) {
             return "Cuaca cukup panas, disarankan membawa topi dan air minum";
         }
-        
+
         if ($temp <= 22) {
             return "Cuaca sejuk dan nyaman untuk aktivitas outdoor";
         }
-        
+
         if ($humidity >= 80) {
             return "Kelembaban tinggi, pastikan tetap terhidrasi dengan baik";
         }
-        
+
         if (strpos($condition, 'berawan') !== false) {
             return "Cuaca berawan, kondisi ideal untuk aktivitas outdoor";
         }
-        
+
         if ($condition === 'cerah') {
             return "Cuaca cerah, sempurna untuk aktivitas outdoor";
         }
-        
+
         return "Kondisi cuaca cukup baik untuk aktivitas outdoor";
     }
-    
+
     /**
      * Get activity recommendations based on weather
      */
@@ -232,7 +232,7 @@ class BMKGWeatherService
         $recommendations = [];
         $condition = strtolower($weatherData['condition']);
         $temp = $weatherData['temperature'];
-        
+
         if ($this->isWeatherSuitable($weatherData)) {
             if ($condition === 'cerah' && $temp <= 30) {
                 $recommendations[] = "Ideal untuk survey lapangan";
@@ -246,7 +246,7 @@ class BMKGWeatherService
         } else {
             $recommendations[] = "Lebih baik ditunda atau dilakukan indoor";
         }
-        
+
         return $recommendations;
     }
 }
