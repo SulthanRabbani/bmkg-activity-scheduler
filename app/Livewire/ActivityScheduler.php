@@ -59,6 +59,8 @@ class ActivityScheduler extends Component
             if ($result['success']) {
                 $this->suggestions = $result['suggestions'];
                 $this->showResults = true;
+                // Dispatch event untuk scroll ke hasil
+                $this->dispatch('scrollToResults');
             } else {
                 $this->errorMessage = $result['message'] ?? 'Terjadi kesalahan saat memproses permintaan Anda.';
             }

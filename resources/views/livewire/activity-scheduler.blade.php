@@ -118,7 +118,7 @@
 
         <!-- Results Section -->
         @if($showResults && count($suggestions) > 0)
-            <div class="mt-6 sm:mt-12 px-2 sm:px-0" wire:transition>
+            <div id="results-section" class="mt-6 sm:mt-12 px-2 sm:px-0" wire:transition>
                 <h4 class="text-sm sm:text-xl lg:text-2xl font-bold text-center mb-3 sm:mb-6 lg:mb-8 text-gray-800">
                     <i class="fas fa-cloud-sun text-yellow-500 mr-1 sm:mr-3 text-sm sm:text-base"></i>
                     <span class="block sm:inline text-xs sm:text-base">Rekomendasi Waktu Aktivitas</span>
@@ -190,7 +190,7 @@
                 </div>
             </div>
         @elseif($showResults && count($suggestions) === 0)
-            <div class="mt-6 sm:mt-12 px-2 sm:px-0">
+            <div id="results-section" class="mt-6 sm:mt-12 px-2 sm:px-0">
                 <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 sm:p-8 text-center mx-2 sm:mx-0">
                     <i class="fas fa-exclamation-triangle text-yellow-500 text-2xl sm:text-3xl lg:text-4xl mb-2 sm:mb-4"></i>
                     <h5 class="text-lg sm:text-xl font-semibold text-yellow-800 mb-2">Tidak Ada Waktu Optimal</h5>
@@ -211,4 +211,26 @@
             </div>
         </div>
     </footer>
+
+    <script>
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('scrollToResults', () => {
+                // Delay sedikit untuk memastikan DOM sudah ter-update
+                setTimeout(() => {
+                    const resultsSection = document.getElementById('results-section');
+                    if (resultsSection) {
+                        // Hitung offset untuk header yang mungkin fixed
+                        const offset = 80; // Sesuaikan dengan tinggi header jika ada
+                        const elementTop = resultsSection.getBoundingClientRect().top;
+                        const offsetPosition = elementTop + window.pageYOffset - offset;
+
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: 'smooth'
+                        });
+                    }
+                }, 100);
+            });
+        });
+    </script>
 </div>
