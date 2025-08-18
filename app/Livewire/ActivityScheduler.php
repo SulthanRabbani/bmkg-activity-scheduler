@@ -5,8 +5,10 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Services\BMKGWeatherService;
 use Livewire\Attributes\Validate;
+use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\Log;
 
+#[Layout('layouts.app')]
 class ActivityScheduler extends Component
 {
     #[Validate('required|string|min:3')]
@@ -90,7 +92,6 @@ class ActivityScheduler extends Component
 
     public function render()
     {
-        return view('livewire.activity-scheduler')
-            ->layout('layouts.app');
+        return view('livewire.activity-scheduler');
     }
 }
