@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ActivitySchedulerController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [ActivitySchedulerController::class, 'index']);
+Route::post('/weather-suggestions', [ActivitySchedulerController::class, 'getWeatherSuggestions']);
