@@ -1,5 +1,16 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_repla                        <a
+                            href="{{ route('activity-scheduler') }}"
+                            class="inline-block px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition duration-200 transform hover:scale-105"
+                        >
+                            AJAX Version
+                        </a>
+                        <a
+                            href="{{ route('activity-scheduler-livewire') }}"
+                            class="inline-block px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition duration-200 transform hover:scale-105"
+                        >
+                            Livewire Version
+                        </a>app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -26,9 +37,15 @@
                     @auth
                         <a
                             href="{{ route('activity-scheduler') }}"
-                            class="inline-block px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition duration-200 transform hover:scale-105"
+                            class="inline-block px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition duration-200 transform hover:scale-105"
                         >
-                            Activity Scheduler
+                            AJAX Version
+                        </a>
+                        <a
+                            href="{{ route('activity-scheduler-livewire') }}"
+                            class="inline-block px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition duration-200 transform hover:scale-105"
+                        >
+                            Livewire Version
                         </a>
                     @else
                         <a

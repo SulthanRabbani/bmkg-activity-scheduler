@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ActivitySchedulerController;
 
-Route::get('/', [ActivitySchedulerController::class, 'index']);
-Route::post('/weather-suggestions', [ActivitySchedulerController::class, 'getWeatherSuggestions']);
+Route::get('/', \App\Livewire\ActivityScheduler::class)->name('home');
+
+Route::get('/activity-scheduler', \App\Livewire\ActivityScheduler::class)->name('activity-scheduler');

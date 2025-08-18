@@ -249,4 +249,142 @@ class BMKGWeatherService
 
         return $recommendations;
     }
+
+    /**
+     * Get weather suggestions for activity planning
+     */
+    public function getWeatherSuggestions($requestData)
+    {
+        try {
+            $activityName = $requestData['activity_name'];
+            $location = $requestData['location'];
+            $preferredDate = $requestData['preferred_date'];
+
+            // Get weather forecast for the location
+            $weatherData = $this->getWeatherForecast($location);
+
+            // Generate suggestions for the next 3 days starting from preferred date
+            $suggestions = [];
+            $startDate = Carbon::parse($preferredDate);
+
+            for ($i = 0; $i < 3; $i++) {
+                $currentDate = $startDate->copy()->addDays($i);
+                $dayName = $currentDate->locale('id')->isoFormat('dddd');
+
+                $timeSlots = [];
+
+                // Generate time slots for the day (6 AM to 6 PM)
+                for ($hour = 6; $hour <= 18; $hour += 3) {
+                    $timeSlot = sprintf('%02d:00', $hour);
+                    $period = $hour < 12 ? 'Pagi' : ($hour < 15 ? 'Siang' : 'Sore');
+
+                    // Simulate weather conditions based on time and date
+                    $weatherCondition = $this->simulateWeatherCondition($hour, $i);
+                    $temperature = $this->simulateTemperature($hour);
+                    $humidity = $this->simulateHumidity($hour);
+
+                    // Check if weather is suitable for outdoor activity
+                    if ($this->isWeatherSuitable(['condition' => $weatherCondition, 'temperature' => $temperature])) {
+                        $timeSlots[] = [
+                            'time' => $timeSlot,
+                            'period' => $period,
+                            'weather_condition' => $weatherCondition,
+                            'temperature' => $temperature,
+                            'humidity' => $humidity,
+                            'recommendation' => $this->getTimeSlotRecommendation($weatherCondition, $temperature, $period)
+                        ];
+                    }
+                }
+
+                $suggestions[] = [
+                    'date' => $currentDate->format('Y-m-d'),
+                    'day_name' => $dayName,
+                    'time_slots' => $timeSlots
+                ];
+            }
+
+            return [
+                'success' => true,
+                'activity_name' => $activityName,
+                'location' => $location,
+                'suggestions' => $suggestions
+            ];
+
+        } catch (\Exception $e) {
+            Log::error("Error generating weather suggestions: " . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menganalisis data cuaca.'
+            ];
+        }
+    }
+
+    /**
+     * Simulate weather condition for demo purposes
+     */
+    private function simulateWeatherCondition($hour, $dayOffset)
+    {
+        $conditions = ['cerah', 'berawan sebagian', 'berawan', 'kabut', 'hujan ringan'];
+
+        // Better weather in the morning, chance of rain in afternoon
+        if ($hour >= 6 && $hour <= 10) {
+            return $conditions[rand(0, 1)]; // cerah or berawan sebagian
+        } elseif ($hour >= 11 && $hour <= 14) {
+            return $conditions[rand(1, 2)]; // berawan sebagian or berawan
+        } else {
+            return $conditions[rand(2, 4)]; // berawan, kabut, or hujan ringan
+        }
+    }
+
+    /**
+     * Simulate temperature based on time
+     */
+    private function simulateTemperature($hour)
+    {
+        if ($hour >= 6 && $hour <= 9) {
+            return rand(24, 28);
+        } elseif ($hour >= 10 && $hour <= 15) {
+            return rand(28, 33);
+        } else {
+            return rand(25, 30);
+        }
+    }
+
+    /**
+     * Simulate humidity based on time
+     */
+    private function simulateHumidity($hour)
+    {
+        if ($hour >= 6 && $hour <= 9) {
+            return rand(70, 85);
+        } elseif ($hour >= 10 && $hour <= 15) {
+            return rand(60, 75);
+        } else {
+            return rand(65, 80);
+        }
+    }
+
+    /**
+     * Get specific recommendation for time slot
+     */
+    private function getTimeSlotRecommendation($condition, $temperature, $period)
+    {
+        $recommendations = [
+            'Waktu optimal untuk aktivitas outdoor',
+            'Cuaca mendukung untuk kegiatan lapangan',
+            'Kondisi baik untuk survey lokasi',
+            'Ideal untuk dokumentasi dan inspeksi',
+            'Cocok untuk kegiatan pelatihan outdoor'
+        ];
+
+        if ($temperature > 30) {
+            return 'Suhu cukup panas, bawa air minum yang cukup';
+        }
+
+        if (strpos($condition, 'cerah') !== false) {
+            return 'Cuaca cerah, sempurna untuk aktivitas outdoor';
+        }
+
+        return $recommendations[array_rand($recommendations)];
+    }
 }
