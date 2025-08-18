@@ -94,14 +94,6 @@
             </div>
         </div>
 
-        <!-- Loading Spinner -->
-        <div wire:loading.flex class="text-center py-6 sm:py-12 flex justify-center items-center">
-            <div class="text-center">
-                <div class="inline-block animate-spin rounded-full h-6 w-6 sm:h-12 sm:w-12 border-b-2 border-blue-600"></div>
-                <p class="mt-2 sm:mt-4 text-xs sm:text-base text-gray-600 font-medium">Menganalisis data cuaca BMKG...</p>
-            </div>
-        </div>
-
         <!-- Error Message -->
         @if($errorMessage)
             <div class="w-full max-w-sm mx-auto sm:max-w-lg lg:max-w-2xl mt-4 sm:mt-8 px-2 sm:px-0">
