@@ -70,7 +70,7 @@
                     <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 pt-2 sm:pt-4">
                         <button type="submit"
                                 wire:loading.attr="disabled"
-                                class="w-full sm:flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold px-4 py-2 sm:px-8 sm:py-3 rounded-md sm:rounded-lg transition duration-200 transform hover:scale-105 shadow-md sm:shadow-lg text-xs sm:text-base">
+                                class="w-full sm:flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold px-4 py-2 sm:px-8 sm:py-3 rounded-md sm:rounded-lg transition duration-200 shadow-md sm:shadow-lg text-xs sm:text-base">
                             <span wire:loading.remove>
                                 <i class="fas fa-search mr-1 sm:mr-2 text-xs sm:text-sm"></i>
                                 Cari Waktu Optimal
