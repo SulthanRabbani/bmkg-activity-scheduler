@@ -53,9 +53,9 @@
                                    autocomplete="off">
 
                             @if($showLocationDropdown && count($availableRegions) > 0)
-                                <div class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md dropdown-shadow max-h-72 overflow-hidden">
+                                <div class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg overflow-hidden">
                                     <!-- Header dengan info jumlah hasil -->
-                                    <div class="sticky top-0 bg-gray-50 px-3 py-2 text-xs text-gray-600 border-b border-gray-200 font-medium">
+                                    <div class="bg-gray-50 px-3 py-2 text-xs text-gray-600 border-b border-gray-200 font-medium">
                                         <i class="fas fa-search mr-1"></i>
                                         Ditemukan {{ count($availableRegions) }} lokasi
                                         @if(count($availableRegions) >= 50)
@@ -64,27 +64,30 @@
                                     </div>
 
                                     <!-- Daftar regions -->
-                                    <div class="max-h-64 overflow-y-auto scrollbar-thin dropdown-smooth-scroll">
+                                    <div class="dropdown-container max-h-64">
                                         @foreach($availableRegions as $index => $region)
                                             <div wire:click="selectRegion('{{ $region['code'] }}', '{{ $region['name'] }}', '{{ $region['full_path'] }}')"
-                                                 class="region-item px-3 py-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-all duration-150 ease-in-out group {{ $index % 2 == 0 ? 'bg-white' : 'bg-gray-50' }} hover:!bg-blue-50">
+                                                 class="region-item px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors duration-150 {{ $index % 2 == 0 ? 'bg-white' : 'bg-gray-50' }}">
+
                                                 <!-- Region name -->
-                                                <div class="font-medium text-sm text-gray-900 group-hover:text-blue-700 transition-colors">
+                                                <div class="font-medium text-sm text-gray-900">
                                                     <i class="fas fa-map-marker-alt text-blue-500 mr-2 text-xs"></i>
                                                     {{ $region['name'] }}
                                                 </div>
+
                                                 <!-- Full path -->
-                                                <div class="text-xs text-gray-500 mt-1 group-hover:text-blue-600 transition-colors">
-                                                    <i class="fas fa-chevron-right text-gray-400 mr-1"></i>
+                                                <div class="text-xs text-gray-500 mt-1">
                                                     {{ $region['full_path'] }}
                                                 </div>
+
+
                                             </div>
                                         @endforeach
                                     </div>
 
                                     <!-- Footer dengan tips -->
                                     @if(count($availableRegions) > 5)
-                                        <div class="sticky bottom-0 bg-gray-50 px-3 py-2 text-xs text-gray-500 border-t border-gray-200">
+                                        <div class="bg-gray-50 px-3 py-2 text-xs text-gray-500 border-t border-gray-200">
                                             <i class="fas fa-lightbulb mr-1 text-yellow-500"></i>
                                             Tip: Ketik lebih spesifik untuk mempersempit pencarian
                                         </div>
@@ -93,8 +96,8 @@
                             @endif
 
                             @if($searchLoading)
-                                <div class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md dropdown-shadow">
-                                    <div class="px-4 py-3 text-center search-loading">
+                                <div class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+                                    <div class="px-4 py-3 text-center">
                                         <div class="inline-flex items-center">
                                             <i class="fas fa-spinner fa-spin text-blue-500 mr-2"></i>
                                             <span class="text-sm text-gray-600">Mencari lokasi...</span>
@@ -104,13 +107,16 @@
                             @endif
 
                             @if($showLocationDropdown && count($availableRegions) === 0 && strlen($locationSearch) >= 2)
-                                <div class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-xl">
-                                    <div class="px-4 py-6 text-center">
+                                <div class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+                                    <div class="px-4 py-4 text-center">
                                         <div class="text-gray-400 mb-2">
-                                            <i class="fas fa-search text-2xl"></i>
+                                            <i class="fas fa-search text-xl"></i>
                                         </div>
                                         <div class="text-sm text-gray-600 font-medium mb-1">
                                             Tidak ada lokasi yang ditemukan
+                                        </div>
+                                        <div class="text-xs text-gray-500">
+                                            Coba gunakan kata kunci yang berbeda
                                         </div>
                                     </div>
                                 </div>
@@ -290,30 +296,54 @@
     <style>
         /* Custom scrollbar styling */
         .scrollbar-thin::-webkit-scrollbar {
-            width: 6px;
+            width: 8px;
         }
 
         .scrollbar-thin::-webkit-scrollbar-track {
             background: #f1f5f9;
-            border-radius: 3px;
+            border-radius: 4px;
         }
 
         .scrollbar-thin::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
+            background: #94a3b8;
+            border-radius: 4px;
         }
 
         .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+            background: #64748b;
         }
 
         /* Firefox scrollbar */
         .scrollbar-thin {
             scrollbar-width: thin;
-            scrollbar-color: #cbd5e1 #f1f5f9;
+            scrollbar-color: #94a3b8 #f1f5f9;
         }
 
-        /* Smooth scrolling for dropdown */
+        /* Better dropdown container */
+        .dropdown-container {
+            max-height: 320px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #94a3b8 #f1f5f9;
+        }
+
+        .dropdown-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .dropdown-container::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        .dropdown-container::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 4px;
+        }
+
+        .dropdown-container::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }        /* Smooth scrolling for dropdown */
         .dropdown-smooth-scroll {
             scroll-behavior: smooth;
         }
@@ -379,7 +409,7 @@
             let selectedIndex = -1;
 
             document.addEventListener('keydown', function(e) {
-                const dropdown = document.querySelector('.dropdown-smooth-scroll');
+                const dropdown = document.querySelector('.dropdown-container');
                 const items = document.querySelectorAll('.region-item');
 
                 if (!dropdown || items.length === 0) return;
