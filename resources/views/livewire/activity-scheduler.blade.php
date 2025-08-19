@@ -42,12 +42,86 @@
                             <i class="fas fa-map-marker-alt mr-1 sm:mr-2 text-xs sm:text-sm"></i>
                             <span class="text-xs sm:text-sm">Lokasi (Kecamatan/Desa)</span>
                         </label>
-                        <input type="text"
-                               wire:model="location"
-                               class="w-full px-2 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-md sm:rounded-lg focus:ring-1 sm:focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 placeholder-gray-400 text-xs sm:text-base @error('location') border-red-500 @enderror"
-                               id="location"
-                               placeholder="Contoh: Jakarta Pusat, Bogor">
+                        <div class="relative">
+                            <input type="text"
+                                   wire:model.live.debounce.300ms="locationSearch"
+                                   wire:focus="showLocationDropdown"
+                                   wire:blur="hideLocationDropdown"
+                                   class="location-input w-full px-2 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-md sm:rounded-lg focus:ring-1 sm:focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 placeholder-gray-400 text-xs sm:text-base @error('selectedRegionCode') border-red-500 @enderror"
+                                   id="location"
+                                   placeholder="Ketik untuk mencari lokasi..."
+                                   autocomplete="off">
+
+                            @if($showLocationDropdown && count($availableRegions) > 0)
+                                <div class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md dropdown-shadow max-h-72 overflow-hidden">
+                                    <!-- Header dengan info jumlah hasil -->
+                                    <div class="sticky top-0 bg-gray-50 px-3 py-2 text-xs text-gray-600 border-b border-gray-200 font-medium">
+                                        <i class="fas fa-search mr-1"></i>
+                                        Ditemukan {{ count($availableRegions) }} lokasi
+                                        @if(count($availableRegions) >= 50)
+                                            <span class="text-orange-600">(maksimal 50 ditampilkan)</span>
+                                        @endif
+                                    </div>
+
+                                    <!-- Daftar regions -->
+                                    <div class="max-h-64 overflow-y-auto scrollbar-thin dropdown-smooth-scroll">
+                                        @foreach($availableRegions as $index => $region)
+                                            <div wire:click="selectRegion('{{ $region['code'] }}', '{{ $region['name'] }}', '{{ $region['full_path'] }}')"
+                                                 class="region-item px-3 py-3 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-all duration-150 ease-in-out group {{ $index % 2 == 0 ? 'bg-white' : 'bg-gray-50' }} hover:!bg-blue-50">
+                                                <!-- Region name -->
+                                                <div class="font-medium text-sm text-gray-900 group-hover:text-blue-700 transition-colors">
+                                                    <i class="fas fa-map-marker-alt text-blue-500 mr-2 text-xs"></i>
+                                                    {{ $region['name'] }}
+                                                </div>
+                                                <!-- Full path -->
+                                                <div class="text-xs text-gray-500 mt-1 group-hover:text-blue-600 transition-colors">
+                                                    <i class="fas fa-chevron-right text-gray-400 mr-1"></i>
+                                                    {{ $region['full_path'] }}
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+
+                                    <!-- Footer dengan tips -->
+                                    @if(count($availableRegions) > 5)
+                                        <div class="sticky bottom-0 bg-gray-50 px-3 py-2 text-xs text-gray-500 border-t border-gray-200">
+                                            <i class="fas fa-lightbulb mr-1 text-yellow-500"></i>
+                                            Tip: Ketik lebih spesifik untuk mempersempit pencarian
+                                        </div>
+                                    @endif
+                                </div>
+                            @endif
+
+                            @if($searchLoading)
+                                <div class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md dropdown-shadow">
+                                    <div class="px-4 py-3 text-center search-loading">
+                                        <div class="inline-flex items-center">
+                                            <i class="fas fa-spinner fa-spin text-blue-500 mr-2"></i>
+                                            <span class="text-sm text-gray-600">Mencari lokasi...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
+                            @if($showLocationDropdown && count($availableRegions) === 0 && strlen($locationSearch) >= 2)
+                                <div class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-xl">
+                                    <div class="px-4 py-6 text-center">
+                                        <div class="text-gray-400 mb-2">
+                                            <i class="fas fa-search text-2xl"></i>
+                                        </div>
+                                        <div class="text-sm text-gray-600 font-medium mb-1">
+                                            Tidak ada lokasi yang ditemukan
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+
+
+                        </div>
                         @error('location')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                        @error('selectedRegionCode')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -212,6 +286,69 @@
         </div>
     </footer>
 
+    <!-- Custom CSS for enhanced scrollable select box -->
+    <style>
+        /* Custom scrollbar styling */
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Firefox scrollbar */
+        .scrollbar-thin {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 #f1f5f9;
+        }
+
+        /* Smooth scrolling for dropdown */
+        .dropdown-smooth-scroll {
+            scroll-behavior: smooth;
+        }
+
+        /* Enhanced hover effects */
+        .region-item:hover {
+            transform: translateX(2px);
+            transition: all 0.15s ease-in-out;
+        }
+
+        /* Loading animation for search */
+        .search-loading {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* Enhanced focus ring for accessibility */
+        .location-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Dropdown shadow enhancement */
+        .dropdown-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+
     <script>
         document.addEventListener('livewire:init', () => {
             Livewire.on('scrollToResults', () => {
@@ -231,6 +368,65 @@
                     }
                 }, 100);
             });
+
+            Livewire.on('hideDropdownDelayed', () => {
+                setTimeout(() => {
+                    Livewire.dispatch('hideDropdown');
+                }, 200);
+            });
+
+            // Enhanced keyboard navigation for dropdown
+            let selectedIndex = -1;
+
+            document.addEventListener('keydown', function(e) {
+                const dropdown = document.querySelector('.dropdown-smooth-scroll');
+                const items = document.querySelectorAll('.region-item');
+
+                if (!dropdown || items.length === 0) return;
+
+                switch(e.key) {
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                        updateSelection(items);
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        selectedIndex = Math.max(selectedIndex - 1, -1);
+                        updateSelection(items);
+                        break;
+                    case 'Enter':
+                        if (selectedIndex >= 0 && items[selectedIndex]) {
+                            e.preventDefault();
+                            items[selectedIndex].click();
+                        }
+                        break;
+                    case 'Escape':
+                        selectedIndex = -1;
+                        updateSelection(items);
+                        break;
+                }
+            });
+
+            function updateSelection(items) {
+                items.forEach((item, index) => {
+                    if (index === selectedIndex) {
+                        item.classList.add('bg-blue-100', 'border-blue-300');
+                        item.classList.remove('bg-white', 'bg-gray-50');
+                        // Scroll into view
+                        item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    } else {
+                        item.classList.remove('bg-blue-100', 'border-blue-300');
+                        if (index % 2 === 0) {
+                            item.classList.add('bg-white');
+                            item.classList.remove('bg-gray-50');
+                        } else {
+                            item.classList.add('bg-gray-50');
+                            item.classList.remove('bg-white');
+                        }
+                    }
+                });
+            }
         });
     </script>
 </div>

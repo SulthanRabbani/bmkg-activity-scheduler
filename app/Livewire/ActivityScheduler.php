@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Services\BMKGWeatherService;
+use App\Models\Region;
 use Livewire\Attributes\Validate;
 use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\Log;
@@ -11,20 +12,22 @@ use Illuminate\Support\Facades\Log;
 #[Layout('layouts.app')]
 class ActivityScheduler extends Component
 {
-    #[Validate('required|string|min:3')]
     public $activityName = '';
-
-    #[Validate('required|string|min:3')]
     public $location = '';
-
-    #[Validate('required|date|after_or_equal:today')]
+    public $selectedRegionCode = '';
     public $preferredDate = '';
+
+    public $locationSearch = '';
+    public $showLocationDropdown = false;
+    public $availableRegions = [];
+    public $searchLoading = false;
 
     public $suggestions = [];
     public $loading = false;
     public $errorMessage = '';
     public $showResults = false;
 
+    protected $listeners = ['hideDropdown'];
     protected $weatherService;
 
     public function boot(BMKGWeatherService $weatherService)
@@ -35,11 +38,95 @@ class ActivityScheduler extends Component
     public function mount()
     {
         $this->preferredDate = now()->format('Y-m-d');
+        $this->loadRegions();
+    }
+
+    public function loadRegions()
+    {
+        // Load districts and villages for location selection
+        $this->availableRegions = Region::whereIn('level', [3, 4])
+            ->with('parent.parent.parent') // Load full hierarchy
+            ->orderBy('name')
+            ->limit(100) // Limit for initial load
+            ->get()
+            ->map(function ($region) {
+                return [
+                    'code' => $region->code,
+                    'name' => $region->name,
+                    'full_path' => $region->full_path,
+                    'level' => $region->level,
+                    'level_name' => $region->level_name
+                ];
+            });
+    }
+
+    public function updatedLocationSearch()
+    {
+        if (strlen($this->locationSearch) >= 2) {
+            $this->searchLoading = true;
+
+            $this->availableRegions = Region::whereIn('level', [3, 4])
+                ->where('name', 'like', '%' . $this->locationSearch . '%')
+                ->with('parent.parent.parent')
+                ->orderBy('name')
+                ->limit(50)
+                ->get()
+                ->map(function ($region) {
+                    return [
+                        'code' => $region->code,
+                        'name' => $region->name,
+                        'full_path' => $region->full_path,
+                        'level' => $region->level,
+                        'level_name' => $region->level_name
+                    ];
+                });
+
+            $this->searchLoading = false;
+            $this->showLocationDropdown = true;
+        } else {
+            $this->showLocationDropdown = false;
+            $this->searchLoading = false;
+            $this->loadRegions();
+        }
+    }
+
+    public function selectRegion($regionCode, $regionName, $fullPath)
+    {
+        $this->selectedRegionCode = $regionCode;
+        $this->location = $regionName;
+        $this->locationSearch = $fullPath;
+        $this->showLocationDropdown = false;
+    }
+
+    public function showLocationDropdown()
+    {
+        $this->showLocationDropdown = true;
+    }
+
+    public function hideLocationDropdown()
+    {
+        // Add small delay to allow click on dropdown items
+        $this->dispatch('hideDropdownDelayed');
+    }
+
+    public function hideDropdown()
+    {
+        $this->showLocationDropdown = false;
     }
 
     public function searchOptimalTime()
     {
-        $this->validate();
+        $this->validate([
+            'activityName' => 'required|string|min:3',
+            'selectedRegionCode' => 'required|string',
+            'preferredDate' => 'required|date|after_or_equal:today'
+        ], [
+            'selectedRegionCode.required' => 'Silakan pilih lokasi dari daftar yang tersedia.',
+            'activityName.required' => 'Nama aktivitas harus diisi.',
+            'activityName.min' => 'Nama aktivitas minimal 3 karakter.',
+            'preferredDate.required' => 'Tanggal preferensi harus diisi.',
+            'preferredDate.after_or_equal' => 'Tanggal preferensi tidak boleh kurang dari hari ini.'
+        ]);
 
         $this->loading = true;
         $this->errorMessage = '';
@@ -53,6 +140,7 @@ class ActivityScheduler extends Component
             $result = $this->weatherService->getWeatherSuggestions([
                 'activity_name' => $this->activityName,
                 'location' => $this->location,
+                'region_code' => $this->selectedRegionCode,
                 'preferred_date' => $this->preferredDate,
             ]);
 
@@ -74,8 +162,9 @@ class ActivityScheduler extends Component
 
     public function resetForm()
     {
-        $this->reset(['activityName', 'location', 'suggestions', 'errorMessage', 'showResults']);
+        $this->reset(['activityName', 'location', 'locationSearch', 'selectedRegionCode', 'suggestions', 'errorMessage', 'showResults', 'showLocationDropdown', 'searchLoading']);
         $this->preferredDate = now()->format('Y-m-d');
+        $this->loadRegions();
     }
 
     public function getWeatherIcon($condition)
