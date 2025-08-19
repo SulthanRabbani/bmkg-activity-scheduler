@@ -36,7 +36,7 @@ class TestBMKGApi extends Command
     public function handle()
     {
         $regionCode = $this->argument('region_code');
-        
+
         if (!$regionCode) {
             // Use a default region code (Jakarta)
             $regionCode = '31.01.01.1001';
@@ -54,7 +54,7 @@ class TestBMKGApi extends Command
             if (!empty($weatherData)) {
                 $this->info("✅ Weather data retrieved successfully!");
                 $this->line("Days of data: " . count($weatherData));
-                
+
                 foreach ($weatherData as $dayIndex => $dayData) {
                     $this->line("\nDay " . ($dayIndex + 1) . ":");
                     foreach ($dayData as $period => $data) {
@@ -68,7 +68,7 @@ class TestBMKGApi extends Command
             // Test weather suggestions
             $this->line("\n=========================================");
             $this->info("Testing weather suggestions...");
-            
+
             $suggestions = $this->weatherService->getWeatherSuggestions([
                 'activity_name' => 'Test Activity',
                 'location' => 'Test Location',
@@ -79,11 +79,11 @@ class TestBMKGApi extends Command
             if ($suggestions['success']) {
                 $this->info("✅ Weather suggestions generated successfully!");
                 $this->line("Total days: " . count($suggestions['suggestions']));
-                
+
                 foreach ($suggestions['suggestions'] as $dayIndex => $day) {
                     $this->line("\n{$day['day_name']} ({$day['date']}):");
                     $this->line("  Optimal time slots: " . count($day['time_slots']));
-                    
+
                     foreach ($day['time_slots'] as $slot) {
                         $this->line("    {$slot['time']} ({$slot['period']}): {$slot['weather_condition']}, {$slot['temperature']}°C");
                     }

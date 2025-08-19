@@ -23,7 +23,7 @@ class BMKGWeatherService
 
             if ($response->successful()) {
                 $data = $response->json();
-                
+
                 if (isset($data['data']) && count($data['data']) > 0) {
                     return $this->parseBMKGApiResponse($data);
                 }
@@ -33,7 +33,7 @@ class BMKGWeatherService
             Log::warning("BMKG API unavailable or returned empty data for region code: {$regionCode}");
             Log::debug("API Response status: " . $response->status());
             Log::debug("API Response body: " . $response->body());
-            
+
             return $this->generateMockWeatherData();
 
         } catch (\Exception $e) {
@@ -49,21 +49,21 @@ class BMKGWeatherService
     {
         try {
             $forecast = [];
-            
+
             if (!isset($data['data']) || empty($data['data'])) {
                 return $this->generateMockWeatherData();
             }
 
             // Get the first region's data (should be the requested region)
             $regionData = $data['data'][0];
-            
+
             if (!isset($regionData['cuaca']) || empty($regionData['cuaca'])) {
                 return $this->generateMockWeatherData();
             }
 
             // Parse weather data for 3 days
             $weatherData = $regionData['cuaca'];
-            
+
             for ($dayIndex = 0; $dayIndex < min(3, count($weatherData)); $dayIndex++) {
                 $dayData = $weatherData[$dayIndex];
                 $dailyForecast = [];
@@ -71,7 +71,7 @@ class BMKGWeatherService
                 // Group forecasts by time periods
                 foreach ($dayData as $timeSlot) {
                     $hour = (int) Carbon::parse($timeSlot['local_datetime'])->format('H');
-                    
+
                     // Define periods based on hour
                     if ($hour >= 6 && $hour < 12) {
                         $period = 'morning';
@@ -85,7 +85,7 @@ class BMKGWeatherService
                     if (!isset($dailyForecast[$period])) {
                         $condition = $this->translateWeatherCondition($timeSlot['weather_desc']);
                         $suitable = $this->isConditionSuitable($timeSlot['weather']);
-                        
+
                         $dailyForecast[$period] = [
                             'condition' => $condition,
                             'temperature' => $timeSlot['t'],
@@ -115,7 +115,7 @@ class BMKGWeatherService
     private function translateWeatherCondition($weatherDesc)
     {
         $condition = strtolower($weatherDesc);
-        
+
         if (strpos($condition, 'cerah') !== false) {
             return 'cerah';
         } elseif (strpos($condition, 'berawan') !== false) {
@@ -138,12 +138,12 @@ class BMKGWeatherService
     {
         // BMKG weather codes:
         // 0-1: Clear/Sunny
-        // 2-3: Partly Cloudy/Cloudy  
+        // 2-3: Partly Cloudy/Cloudy
         // 60-65: Rain (Light to Heavy)
         // etc.
-        
+
         $unsuitableCodes = [60, 61, 62, 63, 64, 65, 95, 97]; // Rain and storm codes
-        
+
         return !in_array($weatherCode, $unsuitableCodes);
     }
 
@@ -333,12 +333,12 @@ class BMKGWeatherService
                 // Check if we have real data for this day
                 if (isset($weatherData[$i])) {
                     $dayWeatherData = $weatherData[$i];
-                    
+
                     // Process each period of the day
                     foreach (['morning', 'afternoon', 'evening'] as $period) {
                         if (isset($dayWeatherData[$period])) {
                             $periodData = $dayWeatherData[$period];
-                            
+
                             // Check if weather is suitable for outdoor activity
                             if ($periodData['suitable']) {
                                 $timeSlots[] = [
@@ -364,8 +364,8 @@ class BMKGWeatherService
                         $humidity = $this->simulateHumidity($hour);
 
                         if ($this->isWeatherSuitable([
-                            'condition' => $weatherCondition, 
-                            'temperature' => $temperature, 
+                            'condition' => $weatherCondition,
+                            'temperature' => $temperature,
                             'humidity' => $humidity
                         ])) {
                             $timeSlots[] = [

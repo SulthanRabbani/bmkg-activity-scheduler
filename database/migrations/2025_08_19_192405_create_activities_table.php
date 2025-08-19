@@ -22,7 +22,7 @@ return new class extends Migration
             $table->enum('status', ['planned', 'completed', 'cancelled'])->default('planned');
             $table->text('notes')->nullable();
             $table->timestamps();
-            
+
             $table->index(['region_code', 'preferred_date']);
             $table->index('status');
         });

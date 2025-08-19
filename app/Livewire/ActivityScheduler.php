@@ -171,7 +171,7 @@ class ActivityScheduler extends Component
     public function selectTimeSlot($dayIndex, $slotIndex)
     {
         $slotKey = "{$dayIndex}-{$slotIndex}";
-        
+
         if (in_array($slotKey, $this->selectedTimeSlots)) {
             // Remove from selection
             $this->selectedTimeSlots = array_filter($this->selectedTimeSlots, function($slot) use ($slotKey) {
@@ -181,7 +181,7 @@ class ActivityScheduler extends Component
             // Add to selection
             $this->selectedTimeSlots[] = $slotKey;
         }
-        
+
         $this->selectedTimeSlots = array_values($this->selectedTimeSlots); // Re-index array
     }
 
@@ -246,17 +246,17 @@ class ActivityScheduler extends Component
     public function resetForm()
     {
         $this->reset([
-            'activityName', 
-            'location', 
-            'locationSearch', 
-            'selectedRegionCode', 
-            'suggestions', 
+            'activityName',
+            'location',
+            'locationSearch',
+            'selectedRegionCode',
+            'suggestions',
             'weatherApiData',
             'selectedTimeSlots',
             'activitySaved',
-            'errorMessage', 
-            'showResults', 
-            'showLocationDropdown', 
+            'errorMessage',
+            'showResults',
+            'showLocationDropdown',
             'searchLoading'
         ]);
         $this->preferredDate = now()->format('Y-m-d');

@@ -245,12 +245,12 @@
                             <div class="p-2 sm:p-4 lg:p-6">
                                 @if(count($day['time_slots']) > 0)
                                     @foreach($day['time_slots'] as $slotIndex => $slot)
-                                        <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-md sm:rounded-lg p-2 sm:p-3 mb-2 sm:mb-4 border-l-4 border-blue-500 relative cursor-pointer hover:shadow-md transition-all duration-200 
-                                        @if($this->isTimeSlotSelected($loop->parent->index, $slotIndex)) 
-                                            ring-2 ring-green-500 bg-gradient-to-r from-green-50 to-green-100 border-l-green-500 
+                                        <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-md sm:rounded-lg p-2 sm:p-3 mb-2 sm:mb-4 border-l-4 border-blue-500 relative cursor-pointer hover:shadow-md transition-all duration-200
+                                        @if($this->isTimeSlotSelected($loop->parent->index, $slotIndex))
+                                            ring-2 ring-green-500 bg-gradient-to-r from-green-50 to-green-100 border-l-green-500
                                         @endif"
                                              wire:click="selectTimeSlot({{ $loop->parent->index }}, {{ $slotIndex }})">
-                                            
+
                                             <!-- Selection indicator -->
                                             @if($this->isTimeSlotSelected($loop->parent->index, $slotIndex))
                                                 <div class="absolute top-2 right-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">
@@ -315,7 +315,7 @@
                                 <p class="text-blue-700 text-sm mb-4">
                                     {{ count($selectedTimeSlots) }} waktu optimal telah dipilih. Klik tombol di bawah untuk menyimpan jadwal aktivitas Anda.
                                 </p>
-                                <button wire:click="saveActivity" 
+                                <button wire:click="saveActivity"
                                         class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition duration-200 shadow-md">
                                     <i class="fas fa-calendar-check mr-2"></i>
                                     Simpan Aktivitas
@@ -340,7 +340,7 @@
                             <p class="text-green-700 text-sm mb-4">
                                 Jadwal aktivitas "{{ $activityName }}" telah disimpan dengan {{ count($selectedTimeSlots) }} waktu optimal yang dipilih.
                             </p>
-                            <button wire:click="resetForm" 
+                            <button wire:click="resetForm"
                                     class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition duration-200 shadow-md">
                                 <i class="fas fa-plus mr-2"></i>
                                 Buat Jadwal Baru
@@ -482,7 +482,7 @@
             Livewire.on('activitySaved', (event) => {
                 // Show a toast notification or success message
                 console.log('Activity saved with ID:', event.activity_id);
-                
+
                 // Scroll to the success message
                 setTimeout(() => {
                     const successSection = document.querySelector('.bg-green-50');
