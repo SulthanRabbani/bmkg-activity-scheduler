@@ -5,6 +5,7 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Services\BMKGWeatherService;
 use App\Models\Region;
+use App\Models\Activity;
 use Livewire\Attributes\Validate;
 use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\Log;
@@ -23,9 +24,12 @@ class ActivityScheduler extends Component
     public $searchLoading = false;
 
     public $suggestions = [];
+    public $weatherApiData = []; // Store the raw API response
     public $loading = false;
     public $errorMessage = '';
     public $showResults = false;
+    public $selectedTimeSlots = []; // Track user-selected time slots
+    public $activitySaved = false;
 
     protected $listeners = ['hideDropdown'];
     protected $weatherService;
@@ -132,6 +136,9 @@ class ActivityScheduler extends Component
         $this->errorMessage = '';
         $this->showResults = false;
         $this->suggestions = [];
+        $this->selectedTimeSlots = [];
+        $this->activitySaved = false;
+        $this->weatherApiData = [];
 
         try {
             // Simulate API call delay for better UX
@@ -146,6 +153,7 @@ class ActivityScheduler extends Component
 
             if ($result['success']) {
                 $this->suggestions = $result['suggestions'];
+                $this->weatherApiData = $result; // Store the full API response
                 $this->showResults = true;
                 // Dispatch event untuk scroll ke hasil
                 $this->dispatch('scrollToResults');
@@ -160,11 +168,105 @@ class ActivityScheduler extends Component
         }
     }
 
+    public function selectTimeSlot($dayIndex, $slotIndex)
+    {
+        $slotKey = "{$dayIndex}-{$slotIndex}";
+        
+        if (in_array($slotKey, $this->selectedTimeSlots)) {
+            // Remove from selection
+            $this->selectedTimeSlots = array_filter($this->selectedTimeSlots, function($slot) use ($slotKey) {
+                return $slot !== $slotKey;
+            });
+        } else {
+            // Add to selection
+            $this->selectedTimeSlots[] = $slotKey;
+        }
+        
+        $this->selectedTimeSlots = array_values($this->selectedTimeSlots); // Re-index array
+    }
+
+    public function saveActivity()
+    {
+        if (empty($this->selectedTimeSlots)) {
+            $this->errorMessage = 'Silakan pilih minimal satu waktu yang optimal untuk aktivitas Anda.';
+            return;
+        }
+
+        try {
+            // Prepare selected time slots data
+            $selectedSlotsData = [];
+            foreach ($this->selectedTimeSlots as $slotKey) {
+                [$dayIndex, $slotIndex] = explode('-', $slotKey);
+                if (isset($this->suggestions[$dayIndex]['time_slots'][$slotIndex])) {
+                    $slot = $this->suggestions[$dayIndex]['time_slots'][$slotIndex];
+                    $selectedSlotsData[] = [
+                        'date' => $this->suggestions[$dayIndex]['date'],
+                        'day_name' => $this->suggestions[$dayIndex]['day_name'],
+                        'time' => $slot['time'],
+                        'period' => $slot['period'],
+                        'weather_condition' => $slot['weather_condition'],
+                        'temperature' => $slot['temperature'],
+                        'humidity' => $slot['humidity'],
+                        'recommendation' => $slot['recommendation']
+                    ];
+                }
+            }
+
+            // Save activity to database
+            $activity = Activity::create([
+                'name' => $this->activityName,
+                'location' => $this->location,
+                'region_code' => $this->selectedRegionCode,
+                'preferred_date' => $this->preferredDate,
+                'selected_time_slots' => $selectedSlotsData,
+                'weather_data' => $this->weatherApiData,
+                'status' => 'planned'
+            ]);
+
+            $this->activitySaved = true;
+            $this->errorMessage = '';
+
+            Log::info("Activity saved successfully", [
+                'activity_id' => $activity->id,
+                'name' => $this->activityName,
+                'location' => $this->location,
+                'region_code' => $this->selectedRegionCode,
+                'selected_slots_count' => count($selectedSlotsData)
+            ]);
+
+            // Dispatch success event
+            $this->dispatch('activitySaved', ['activity_id' => $activity->id]);
+
+        } catch (\Exception $e) {
+            $this->errorMessage = 'Terjadi kesalahan saat menyimpan aktivitas. Silakan coba lagi.';
+            Log::error('Error saving activity: ' . $e->getMessage());
+        }
+    }
+
     public function resetForm()
     {
-        $this->reset(['activityName', 'location', 'locationSearch', 'selectedRegionCode', 'suggestions', 'errorMessage', 'showResults', 'showLocationDropdown', 'searchLoading']);
+        $this->reset([
+            'activityName', 
+            'location', 
+            'locationSearch', 
+            'selectedRegionCode', 
+            'suggestions', 
+            'weatherApiData',
+            'selectedTimeSlots',
+            'activitySaved',
+            'errorMessage', 
+            'showResults', 
+            'showLocationDropdown', 
+            'searchLoading'
+        ]);
         $this->preferredDate = now()->format('Y-m-d');
         $this->loadRegions();
+    }
+
+    public function isTimeSlotSelected($dayIndex, $slotIndex)
+    {
+        $slotKey = "{$dayIndex}-{$slotIndex}";
+        return in_array($slotKey, $this->selectedTimeSlots);
     }
 
     public function getWeatherIcon($condition)

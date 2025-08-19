@@ -204,11 +204,29 @@
                     <span class="block sm:inline text-xs sm:text-base">Rekomendasi Waktu Aktivitas</span>
                 </h4>
 
+                <!-- Instructions -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 mx-2 sm:mx-0">
+                    <div class="flex items-start">
+                        <i class="fas fa-info-circle text-blue-500 mr-2 mt-1 text-sm"></i>
+                        <div>
+                            <p class="text-blue-800 font-medium text-sm mb-2">
+                                <strong>Cara menggunakan:</strong>
+                            </p>
+                            <ul class="text-blue-700 text-xs sm:text-sm space-y-1">
+                                <li>• Klik pada kotak waktu untuk memilih jadwal optimal untuk aktivitas Anda</li>
+                                <li>• Anda dapat memilih beberapa waktu sekaligus</li>
+                                <li>• Waktu yang dipilih akan ditandai dengan warna hijau</li>
+                                <li>• Klik "Simpan Aktivitas" setelah memilih waktu yang diinginkan</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Activity Info -->
-                <div class="bg-blue-50 border border-blue-200 rounded-md sm:rounded-lg p-2 sm:p-4 mb-3 sm:mb-6 mx-2 sm:mx-0">
+                <div class="bg-indigo-50 border border-indigo-200 rounded-md sm:rounded-lg p-2 sm:p-4 mb-3 sm:mb-6 mx-2 sm:mx-0">
                     <div class="flex items-center">
-                        <i class="fas fa-info-circle text-blue-500 mr-1 sm:mr-2 text-xs sm:text-base"></i>
-                        <p class="text-blue-800 font-medium text-xs sm:text-sm lg:text-base">
+                        <i class="fas fa-calendar-alt text-indigo-500 mr-1 sm:mr-2 text-xs sm:text-base"></i>
+                        <p class="text-indigo-800 font-medium text-xs sm:text-sm lg:text-base">
                             <strong>Aktivitas:</strong> {{ $activityName }} di <strong>{{ $location }}</strong>
                         </p>
                     </div>
@@ -226,8 +244,24 @@
                             </div>
                             <div class="p-2 sm:p-4 lg:p-6">
                                 @if(count($day['time_slots']) > 0)
-                                    @foreach($day['time_slots'] as $slot)
-                                        <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-md sm:rounded-lg p-2 sm:p-3 mb-2 sm:mb-4 border-l-4 border-blue-500">
+                                    @foreach($day['time_slots'] as $slotIndex => $slot)
+                                        <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-md sm:rounded-lg p-2 sm:p-3 mb-2 sm:mb-4 border-l-4 border-blue-500 relative cursor-pointer hover:shadow-md transition-all duration-200 
+                                        @if($this->isTimeSlotSelected($loop->parent->index, $slotIndex)) 
+                                            ring-2 ring-green-500 bg-gradient-to-r from-green-50 to-green-100 border-l-green-500 
+                                        @endif"
+                                             wire:click="selectTimeSlot({{ $loop->parent->index }}, {{ $slotIndex }})">
+                                            
+                                            <!-- Selection indicator -->
+                                            @if($this->isTimeSlotSelected($loop->parent->index, $slotIndex))
+                                                <div class="absolute top-2 right-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">
+                                                    <i class="fas fa-check"></i>
+                                                </div>
+                                            @else
+                                                <div class="absolute top-2 right-2 bg-gray-300 text-gray-600 rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-50 hover:opacity-100">
+                                                    <i class="fas fa-plus"></i>
+                                                </div>
+                                            @endif
+
                                             <div class="space-y-1 sm:space-y-2 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-4 lg:items-center">
                                                 <div class="lg:col-span-1">
                                                     <p class="font-semibold text-blue-700 text-xs sm:text-sm lg:text-base">
@@ -268,6 +302,52 @@
                         </div>
                     @endforeach
                 </div>
+
+                <!-- Activity Saving Section -->
+                @if(!$activitySaved)
+                    <div class="mt-6 sm:mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-6 mx-2 sm:mx-0">
+                        <div class="text-center">
+                            <h5 class="text-lg font-semibold text-blue-800 mb-2">
+                                <i class="fas fa-save mr-2"></i>
+                                Simpan Jadwal Aktivitas
+                            </h5>
+                            @if(count($selectedTimeSlots) > 0)
+                                <p class="text-blue-700 text-sm mb-4">
+                                    {{ count($selectedTimeSlots) }} waktu optimal telah dipilih. Klik tombol di bawah untuk menyimpan jadwal aktivitas Anda.
+                                </p>
+                                <button wire:click="saveActivity" 
+                                        class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-lg transition duration-200 shadow-md">
+                                    <i class="fas fa-calendar-check mr-2"></i>
+                                    Simpan Aktivitas
+                                </button>
+                            @else
+                                <p class="text-blue-600 text-sm">
+                                    <i class="fas fa-hand-pointer mr-1"></i>
+                                    Pilih waktu optimal dengan mengklik pada kotak waktu di atas untuk menyimpan jadwal aktivitas.
+                                </p>
+                            @endif
+                        </div>
+                    </div>
+                @else
+                    <div class="mt-6 sm:mt-8 bg-green-50 border border-green-200 rounded-lg p-4 sm:p-6 mx-2 sm:mx-0">
+                        <div class="text-center">
+                            <div class="text-green-500 text-4xl mb-4">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <h5 class="text-lg font-semibold text-green-800 mb-2">
+                                Aktivitas Berhasil Disimpan!
+                            </h5>
+                            <p class="text-green-700 text-sm mb-4">
+                                Jadwal aktivitas "{{ $activityName }}" telah disimpan dengan {{ count($selectedTimeSlots) }} waktu optimal yang dipilih.
+                            </p>
+                            <button wire:click="resetForm" 
+                                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition duration-200 shadow-md">
+                                <i class="fas fa-plus mr-2"></i>
+                                Buat Jadwal Baru
+                            </button>
+                        </div>
+                    </div>
+                @endif
             </div>
         @elseif($showResults && count($suggestions) === 0)
             <div id="results-section" class="mt-6 sm:mt-12 px-2 sm:px-0">
@@ -395,6 +475,19 @@
                             top: offsetPosition,
                             behavior: 'smooth'
                         });
+                    }
+                }, 100);
+            });
+
+            Livewire.on('activitySaved', (event) => {
+                // Show a toast notification or success message
+                console.log('Activity saved with ID:', event.activity_id);
+                
+                // Scroll to the success message
+                setTimeout(() => {
+                    const successSection = document.querySelector('.bg-green-50');
+                    if (successSection) {
+                        successSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     }
                 }, 100);
             });

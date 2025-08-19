@@ -8,87 +8,143 @@ use Carbon\Carbon;
 
 class BMKGWeatherService
 {
-    private $baseUrl = 'https://data.bmkg.go.id';
+    private $baseUrl = 'https://api.bmkg.go.id/publik/prakiraan-cuaca';
 
     /**
      * Get weather forecast data from BMKG API
      */
-    public function getWeatherForecast($location)
+    public function getWeatherForecast($regionCode)
     {
         try {
-            // Try different BMKG API endpoints
-            $forecast = $this->tryMultipleEndpoints($location);
+            // Call the actual BMKG API
+            $response = Http::timeout(15)->get($this->baseUrl, [
+                'adm4' => $regionCode
+            ]);
 
-            if ($forecast) {
-                return $this->parseWeatherData($forecast);
+            if ($response->successful()) {
+                $data = $response->json();
+                
+                if (isset($data['data']) && count($data['data']) > 0) {
+                    return $this->parseBMKGApiResponse($data);
+                }
             }
 
-            // If API fails, return mock data for demo
-            Log::warning("BMKG API unavailable, using mock data for location: {$location}");
+            // If API fails, log the error and return mock data for demo
+            Log::warning("BMKG API unavailable or returned empty data for region code: {$regionCode}");
+            Log::debug("API Response status: " . $response->status());
+            Log::debug("API Response body: " . $response->body());
+            
             return $this->generateMockWeatherData();
 
         } catch (\Exception $e) {
-            Log::error("Error fetching weather data: " . $e->getMessage());
+            Log::error("Error fetching weather data from BMKG API: " . $e->getMessage());
             return $this->generateMockWeatherData();
         }
     }
 
     /**
-     * Try multiple BMKG API endpoints
+     * Parse BMKG API response data
      */
-    private function tryMultipleEndpoints($location)
-    {
-        $endpoints = [
-            $this->baseUrl . '/DataMKG/MEWS/DigitalForecast/DigitalForecast-' . urlencode($location) . '.xml',
-            $this->baseUrl . '/DataMKG/MEWS/DigitalForecast/',
-            $this->baseUrl . '/prakiraan-cuaca/',
-        ];
-
-        foreach ($endpoints as $endpoint) {
-            try {
-                $response = Http::timeout(10)->get($endpoint);
-
-                if ($response->successful()) {
-                    $body = $response->body();
-                    if (!empty($body) && strlen($body) > 100) {
-                        return $body;
-                    }
-                }
-            } catch (\Exception $e) {
-                Log::debug("Endpoint failed: {$endpoint} - " . $e->getMessage());
-                continue;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Parse weather data from BMKG API response
-     */
-    private function parseWeatherData($xmlData)
+    private function parseBMKGApiResponse($data)
     {
         try {
-            // This is a simplified parser - actual BMKG XML structure may vary
-            libxml_use_internal_errors(true);
-            $xml = simplexml_load_string($xmlData);
-
-            if ($xml === false) {
+            $forecast = [];
+            
+            if (!isset($data['data']) || empty($data['data'])) {
                 return $this->generateMockWeatherData();
             }
 
-            // Parse the XML structure based on actual BMKG format
-            $forecast = [];
+            // Get the first region's data (should be the requested region)
+            $regionData = $data['data'][0];
+            
+            if (!isset($regionData['cuaca']) || empty($regionData['cuaca'])) {
+                return $this->generateMockWeatherData();
+            }
 
-            // Note: This is a simplified implementation
-            // You would need to adjust based on actual BMKG XML structure
+            // Parse weather data for 3 days
+            $weatherData = $regionData['cuaca'];
+            
+            for ($dayIndex = 0; $dayIndex < min(3, count($weatherData)); $dayIndex++) {
+                $dayData = $weatherData[$dayIndex];
+                $dailyForecast = [];
 
-            return $this->generateMockWeatherData(); // Fallback to mock data
+                // Group forecasts by time periods
+                foreach ($dayData as $timeSlot) {
+                    $hour = (int) Carbon::parse($timeSlot['local_datetime'])->format('H');
+                    
+                    // Define periods based on hour
+                    if ($hour >= 6 && $hour < 12) {
+                        $period = 'morning';
+                    } elseif ($hour >= 12 && $hour < 18) {
+                        $period = 'afternoon';
+                    } else {
+                        $period = 'evening';
+                    }
+
+                    // Only store if we haven't recorded this period yet
+                    if (!isset($dailyForecast[$period])) {
+                        $condition = $this->translateWeatherCondition($timeSlot['weather_desc']);
+                        $suitable = $this->isConditionSuitable($timeSlot['weather']);
+                        
+                        $dailyForecast[$period] = [
+                            'condition' => $condition,
+                            'temperature' => $timeSlot['t'],
+                            'humidity' => $timeSlot['hu'],
+                            'wind_speed' => $timeSlot['ws'],
+                            'suitable' => $suitable,
+                            'raw_weather_code' => $timeSlot['weather'],
+                            'original_desc' => $timeSlot['weather_desc']
+                        ];
+                    }
+                }
+
+                $forecast[] = $dailyForecast;
+            }
+
+            return $forecast;
 
         } catch (\Exception $e) {
-            Log::error("Error parsing weather data: " . $e->getMessage());
+            Log::error("Error parsing BMKG API response: " . $e->getMessage());
             return $this->generateMockWeatherData();
         }
+    }
+
+    /**
+     * Translate BMKG weather description to simplified condition
+     */
+    private function translateWeatherCondition($weatherDesc)
+    {
+        $condition = strtolower($weatherDesc);
+        
+        if (strpos($condition, 'cerah') !== false) {
+            return 'cerah';
+        } elseif (strpos($condition, 'berawan') !== false) {
+            return 'berawan';
+        } elseif (strpos($condition, 'kabut') !== false) {
+            return 'kabut';
+        } elseif (strpos($condition, 'hujan ringan') !== false || strpos($condition, 'light rain') !== false) {
+            return 'hujan ringan';
+        } elseif (strpos($condition, 'hujan') !== false || strpos($condition, 'rain') !== false) {
+            return 'hujan';
+        } else {
+            return 'berawan sebagian';
+        }
+    }
+
+    /**
+     * Check if weather condition is suitable based on BMKG weather code
+     */
+    private function isConditionSuitable($weatherCode)
+    {
+        // BMKG weather codes:
+        // 0-1: Clear/Sunny
+        // 2-3: Partly Cloudy/Cloudy  
+        // 60-65: Rain (Light to Heavy)
+        // etc.
+        
+        $unsuitableCodes = [60, 61, 62, 63, 64, 65, 95, 97]; // Rain and storm codes
+        
+        return !in_array($weatherCode, $unsuitableCodes);
     }
 
     /**
@@ -258,10 +314,11 @@ class BMKGWeatherService
         try {
             $activityName = $requestData['activity_name'];
             $location = $requestData['location'];
+            $regionCode = $requestData['region_code'];
             $preferredDate = $requestData['preferred_date'];
 
-            // Get weather forecast for the location
-            $weatherData = $this->getWeatherForecast($location);
+            // Get weather forecast for the region code
+            $weatherData = $this->getWeatherForecast($regionCode);
 
             // Generate suggestions for the next 3 days starting from preferred date
             $suggestions = [];
@@ -273,30 +330,53 @@ class BMKGWeatherService
 
                 $timeSlots = [];
 
-                // Generate time slots for the day (6 AM to 6 PM)
-                for ($hour = 6; $hour <= 18; $hour += 3) {
-                    $timeSlot = sprintf('%02d:00', $hour);
-                    $period = $hour < 12 ? 'Pagi' : ($hour < 15 ? 'Siang' : 'Sore');
+                // Check if we have real data for this day
+                if (isset($weatherData[$i])) {
+                    $dayWeatherData = $weatherData[$i];
+                    
+                    // Process each period of the day
+                    foreach (['morning', 'afternoon', 'evening'] as $period) {
+                        if (isset($dayWeatherData[$period])) {
+                            $periodData = $dayWeatherData[$period];
+                            
+                            // Check if weather is suitable for outdoor activity
+                            if ($periodData['suitable']) {
+                                $timeSlots[] = [
+                                    'time' => $this->getPeriodTime($period),
+                                    'period' => $this->getPeriodLabel($period),
+                                    'weather_condition' => $periodData['condition'],
+                                    'temperature' => $periodData['temperature'],
+                                    'humidity' => $periodData['humidity'],
+                                    'wind_speed' => $periodData['wind_speed'],
+                                    'recommendation' => $this->getWeatherRecommendation($periodData)
+                                ];
+                            }
+                        }
+                    }
+                } else {
+                    // Fallback to simulated data if real data not available
+                    for ($hour = 6; $hour <= 18; $hour += 3) {
+                        $timeSlot = sprintf('%02d:00', $hour);
+                        $period = $hour < 12 ? 'Pagi' : ($hour < 15 ? 'Siang' : 'Sore');
 
-                    // Simulate weather conditions based on time and date
-                    $weatherCondition = $this->simulateWeatherCondition($hour, $i);
-                    $temperature = $this->simulateTemperature($hour);
-                    $humidity = $this->simulateHumidity($hour);
+                        $weatherCondition = $this->simulateWeatherCondition($hour, $i);
+                        $temperature = $this->simulateTemperature($hour);
+                        $humidity = $this->simulateHumidity($hour);
 
-                    // Check if weather is suitable for outdoor activity
-                    if ($this->isWeatherSuitable([
-                        'condition' => $weatherCondition, 
-                        'temperature' => $temperature, 
-                        'humidity' => $humidity
-                    ])) {
-                        $timeSlots[] = [
-                            'time' => $timeSlot,
-                            'period' => $period,
-                            'weather_condition' => $weatherCondition,
-                            'temperature' => $temperature,
-                            'humidity' => $humidity,
-                            'recommendation' => $this->getTimeSlotRecommendation($weatherCondition, $temperature, $period)
-                        ];
+                        if ($this->isWeatherSuitable([
+                            'condition' => $weatherCondition, 
+                            'temperature' => $temperature, 
+                            'humidity' => $humidity
+                        ])) {
+                            $timeSlots[] = [
+                                'time' => $timeSlot,
+                                'period' => $period,
+                                'weather_condition' => $weatherCondition,
+                                'temperature' => $temperature,
+                                'humidity' => $humidity,
+                                'recommendation' => $this->getTimeSlotRecommendation($weatherCondition, $temperature, $period)
+                            ];
+                        }
                     }
                 }
 
@@ -320,6 +400,40 @@ class BMKGWeatherService
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat menganalisis data cuaca.'
             ];
+        }
+    }
+
+    /**
+     * Get time string for period
+     */
+    private function getPeriodTime($period)
+    {
+        switch ($period) {
+            case 'morning':
+                return '08:00';
+            case 'afternoon':
+                return '14:00';
+            case 'evening':
+                return '17:00';
+            default:
+                return '12:00';
+        }
+    }
+
+    /**
+     * Get Indonesian label for period
+     */
+    private function getPeriodLabel($period)
+    {
+        switch ($period) {
+            case 'morning':
+                return 'Pagi';
+            case 'afternoon':
+                return 'Siang';
+            case 'evening':
+                return 'Sore';
+            default:
+                return 'Siang';
         }
     }
 
