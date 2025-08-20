@@ -1,7 +1,7 @@
 
 # BMKG Activity Scheduler
 
-BMKG Activity Scheduler adalah aplikasi web untuk penjadwalan aktivitas dan integrasi data cuaca dari BMKG (Badan Meteorologi, Klimatologi, dan Geofisika Indonesia). Proyek ini bersifat open source dan tersedia publik di GitHub.
+BMKG Activity Scheduler adalah aplikasi web untuk penjadwalan aktivitas dan integrasi data cuaca dari BMKG (Badan Meteorologi, Klimatologi, dan Geofisika Indonesia).
 
 ## Teknologi yang Digunakan
 
@@ -71,7 +71,7 @@ php artisan test
 
 ## Kontribusi
 
-Silakan fork, buka issue, atau submit pull request. Lihat [CONTRIBUTING.md](CONTRIBUTING.md) jika tersedia.
+Silakan fork, buka issue, atau submit pull request.
 
 ## Lisensi
 
