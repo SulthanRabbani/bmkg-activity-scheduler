@@ -5,12 +5,14 @@ BMKG Activity Scheduler adalah aplikasi web untuk penjadwalan aktivitas dan inte
 
 ## Teknologi yang Digunakan
 
-- **Laravel**: Framework PHP untuk backend dan logika aplikasi
-- **Livewire**: Paket Laravel untuk membangun UI dinamis dengan Blade dan PHP
-- **Vite**: Build tool modern untuk frontend dan asset bundling
-- **MySQL**: Database ringan untuk pengembangan lokal
-- **PHPUnit**: Framework testing untuk PHP
-- **BMKG API**: Integrasi data cuaca
+<p align="center">
+  <img src="https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel" />
+  <img src="https://img.shields.io/badge/Livewire-4E56A6?style=for-the-badge&logo=livewire&logoColor=white" alt="Livewire" />
+  <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
+  <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL" />
+  <img src="https://img.shields.io/badge/PHPUnit-366488?style=for-the-badge&logo=php&logoColor=white" alt="PHPUnit" />
+  <img src="https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP" />
+</p>
 
 ## Prasyarat
 
