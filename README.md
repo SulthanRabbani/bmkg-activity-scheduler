@@ -1,9 +1,9 @@
 
 # BMKG Activity Scheduler
 
-BMKG Activity Scheduler adalah aplikasi web untuk penjadwalan aktivitas dan integrasi data cuaca dari BMKG (Badan Meteorologi, Klimatologi, dan Geofisika Indonesia).
+BMKG Activity Scheduler is a web application for activity scheduling and weather data integration from BMKG (Indonesia's Meteorology, Climatology, and Geophysical Agency).
 
-## Teknologi yang Digunakan
+## Tech Stack
 
 <p align="center">
   <img src="https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel" />
@@ -14,34 +14,34 @@ BMKG Activity Scheduler adalah aplikasi web untuk penjadwalan aktivitas dan inte
   <img src="https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP" />
 </p>
 
-## Prasyarat
+## Prerequisites
 
 - PHP >= 8.1
 - Composer
 - Node.js & npm
 
-## Instalasi & Menjalankan Secara Lokal
+## Installation & Running Locally
 
-1. **Clone repository**
+1. **Clone the repository**
 	```bash
 	git clone https://github.com/SulthanRabbani/bmkg-activity-scheduler.git
 	cd bmkg-activity-scheduler
 	```
 
-2. **Install dependensi PHP**
+2. **Install PHP dependencies**
 	```bash
 	composer install
 	```
 
-3. **Install dependensi Node.js**
+3. **Install Node.js dependencies**
 	```bash
 	npm install
 	```
 
-4. **Copy file environment dan konfigurasi**
+4. **Copy environment file and configure**
 	```bash
 	cp .env.example .env
-	# Edit .env sesuai kebutuhan (database, API key BMKG, dll)
+	# Edit .env as needed (database, BMKG API key, etc)
 	```
 
 5. **Generate application key**
@@ -49,32 +49,32 @@ BMKG Activity Scheduler adalah aplikasi web untuk penjadwalan aktivitas dan inte
 	php artisan key:generate
 	```
 
-6. **Jalankan migrasi dan seeder**
+6. **Run migrations and seeders**
 	```bash
 	php artisan migrate --seed
 	```
 
-7. **Build asset frontend**
+7. **Build frontend assets**
 	```bash
 	npm run build
 	```
 
-8. **Jalankan server pengembangan**
+8. **Start the development server**
 	```bash
 	php artisan serve
 	```
-	Aplikasi akan tersedia di http://localhost:8000
+	The app will be available at http://localhost:8000
 
-## Menjalankan Test
+## Running Tests
 
 ```bash
 php artisan test
 ```
 
-## Kontribusi
+## Contributing
 
-Silakan fork, buka issue, atau submit pull request.
+Feel free to fork, open issues, or submit pull requests.
 
-## Lisensi
+## License
 
-Proyek ini menggunakan lisensi MIT.
+This project is licensed under the MIT license.
