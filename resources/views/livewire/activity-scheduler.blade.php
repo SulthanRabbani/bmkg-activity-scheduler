@@ -234,8 +234,8 @@
 
                 <!-- Weather Suggestions -->
                 <div class="space-y-3 sm:space-y-6">
-                    @foreach($suggestions as $day)
-                        <div class="bg-white rounded-lg sm:rounded-xl shadow-md sm:shadow-lg border-l-4 border-green-500 mb-3 sm:mb-6 mx-2 sm:mx-0 overflow-hidden hover:shadow-lg sm:hover:shadow-xl transition-shadow duration-300">
+                    @foreach($suggestions as $dayIndex => $day)
+                        <div wire:key="day-{{ $dayIndex }}-{{ $day['date'] }}" class="bg-white rounded-lg sm:rounded-xl shadow-md sm:shadow-lg border-l-4 border-green-500 mb-3 sm:mb-6 mx-2 sm:mx-0 overflow-hidden hover:shadow-lg sm:hover:shadow-xl transition-shadow duration-300">
                             <div class="bg-blue-600 text-white p-2 sm:p-4">
                                 <h5 class="text-xs sm:text-lg font-semibold">
                                     <i class="fas fa-calendar-day mr-1 sm:mr-2 text-xs sm:text-base"></i>
@@ -245,14 +245,14 @@
                             <div class="p-2 sm:p-4 lg:p-6">
                                 @if(count($day['time_slots']) > 0)
                                     @foreach($day['time_slots'] as $slotIndex => $slot)
-                                        <div class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-md sm:rounded-lg p-2 sm:p-3 mb-2 sm:mb-4 border-l-4 border-blue-500 relative cursor-pointer hover:shadow-md transition-all duration-200
-                                        @if($this->isTimeSlotSelected($loop->parent->index, $slotIndex))
+                                        <div wire:key="slot-{{ $dayIndex }}-{{ $slotIndex }}-{{ $slot['time'] }}" class="bg-gradient-to-r from-gray-50 to-gray-100 rounded-md sm:rounded-lg p-2 sm:p-3 mb-2 sm:mb-4 border-l-4 border-blue-500 relative cursor-pointer hover:shadow-md transition-all duration-200
+                                        @if($this->isTimeSlotSelected($dayIndex, $slotIndex))
                                             ring-2 ring-green-500 bg-gradient-to-r from-green-50 to-green-100 border-l-green-500
                                         @endif"
-                                             wire:click="selectTimeSlot({{ $loop->parent->index }}, {{ $slotIndex }})">
+                                             wire:click="selectTimeSlot({{ $dayIndex }}, {{ $slotIndex }})">
 
                                             <!-- Selection indicator -->
-                                            @if($this->isTimeSlotSelected($loop->parent->index, $slotIndex))
+                                            @if($this->isTimeSlotSelected($dayIndex, $slotIndex))
                                                 <div class="absolute top-2 right-2 bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">
                                                     <i class="fas fa-check"></i>
                                                 </div>
