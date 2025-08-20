@@ -1,45 +1,47 @@
 
 # BMKG Activity Scheduler
 
-BMKG Activity Scheduler adalah aplikasi web untuk penjadwalan aktivitas dan integrasi data cuaca dari BMKG (Badan Meteorologi, Klimatologi, dan Geofisika Indonesia). Proyek ini bersifat open source dan tersedia publik di GitHub.
+BMKG Activity Scheduler is a web application for activity scheduling and weather data integration from BMKG (Indonesia's Meteorology, Climatology, and Geophysical Agency).
 
-## Teknologi yang Digunakan
+## Tech Stack
 
-- **Laravel**: Framework PHP untuk backend dan logika aplikasi
-- **Livewire**: Paket Laravel untuk membangun UI dinamis dengan Blade dan PHP
-- **Vite**: Build tool modern untuk frontend dan asset bundling
-- **MySQL**: Database ringan untuk pengembangan lokal
-- **PHPUnit**: Framework testing untuk PHP
-- **BMKG API**: Integrasi data cuaca
+<p align="center">
+  <img src="https://img.shields.io/badge/Laravel-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel" />
+  <img src="https://img.shields.io/badge/Livewire-4E56A6?style=for-the-badge&logo=livewire&logoColor=white" alt="Livewire" />
+  <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
+  <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL" />
+  <img src="https://img.shields.io/badge/PHPUnit-366488?style=for-the-badge&logo=php&logoColor=white" alt="PHPUnit" />
+  <img src="https://img.shields.io/badge/PHP-777BB4?style=for-the-badge&logo=php&logoColor=white" alt="PHP" />
+</p>
 
-## Prasyarat
+## Prerequisites
 
 - PHP >= 8.1
 - Composer
 - Node.js & npm
 
-## Instalasi & Menjalankan Secara Lokal
+## Installation & Running Locally
 
-1. **Clone repository**
+1. **Clone the repository**
 	```bash
 	git clone https://github.com/SulthanRabbani/bmkg-activity-scheduler.git
 	cd bmkg-activity-scheduler
 	```
 
-2. **Install dependensi PHP**
+2. **Install PHP dependencies**
 	```bash
 	composer install
 	```
 
-3. **Install dependensi Node.js**
+3. **Install Node.js dependencies**
 	```bash
 	npm install
 	```
 
-4. **Copy file environment dan konfigurasi**
+4. **Copy environment file and configure**
 	```bash
 	cp .env.example .env
-	# Edit .env sesuai kebutuhan (database, API key BMKG, dll)
+	# Edit .env as needed (database, BMKG API key, etc)
 	```
 
 5. **Generate application key**
@@ -47,32 +49,32 @@ BMKG Activity Scheduler adalah aplikasi web untuk penjadwalan aktivitas dan inte
 	php artisan key:generate
 	```
 
-6. **Jalankan migrasi dan seeder**
+6. **Run migrations and seeders**
 	```bash
 	php artisan migrate --seed
 	```
 
-7. **Build asset frontend**
+7. **Build frontend assets**
 	```bash
 	npm run build
 	```
 
-8. **Jalankan server pengembangan**
+8. **Start the development server**
 	```bash
 	php artisan serve
 	```
-	Aplikasi akan tersedia di http://localhost:8000
+	The app will be available at http://localhost:8000
 
-## Menjalankan Test
+## Running Tests
 
 ```bash
 php artisan test
 ```
 
-## Kontribusi
+## Contributing
 
-Silakan fork, buka issue, atau submit pull request. Lihat [CONTRIBUTING.md](CONTRIBUTING.md) jika tersedia.
+Feel free to fork, open issues, or submit pull requests.
 
-## Lisensi
+## License
 
-Proyek ini menggunakan lisensi MIT.
+This project is licensed under the MIT license.
